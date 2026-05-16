@@ -117,5 +117,5 @@ h4,
 }
 
 .btn-imdb:hover {
-  @apply bg-[#E2B616] shadow-[0_0_20px_rgba(245, 197, 24, 0.3)];
+  @apply bg-[#E2B616] shadow-[0_0_20px_rgba(245,197,24,0.3)];
 }
