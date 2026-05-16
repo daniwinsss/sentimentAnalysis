@@ -16,6 +16,7 @@ router.post('/', auth, async (req, res) => {
 
   try {
     const prediction = await predictSingle(text, model)
+    console.log('Prediction received:', prediction)
     const record = await Analysis.create({
       userId: req.user.id,
       text,
@@ -63,8 +64,7 @@ router.post('/batch', auth, upload.single('file'), async (req, res) => {
     }
 
     const results = await predictBatch(items, model)
-
-    // Save to history and create enriched results for frontend
+    console.log(`Batch prediction finished for ${items.length} items`)
     const analysisRecords = []
     const enrichedResults = validRows.map((row, index) => {
       const prediction = results.items[index]

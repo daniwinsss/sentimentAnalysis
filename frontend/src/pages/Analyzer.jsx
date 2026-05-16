@@ -32,21 +32,30 @@ function Analyzer() {
 
     setLoading(true)
     setError(null)
+    setResult(null) // Reset result on new attempt
     try {
       const token = localStorage.getItem('token')
+      console.log('Dispatching analysis request...')
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'}/api/analyze`,
         { text, model: selectedModel },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 60000 // 60s frontend timeout
+        }
       )
-      setResult(response.data.prediction)
+      console.log('Response received:', response.data)
+      if (response.data && response.data.prediction) {
+        setResult(response.data.prediction)
+      } else {
+        throw new Error('Incomplete response from server')
+      }
     } catch (err) {
       console.error('Analysis failed:', err)
-      setError(
-        err.response?.data?.details 
+      const msg = err.response?.data?.details 
           ? `${err.response.data.message}: ${err.response.data.details}`
-          : err.response?.data?.message || 'Inference engine is currently offline.'
-      )
+          : err.response?.data?.message || err.message || 'Inference engine is currently offline.'
+      setError(msg)
     } finally {
       setLoading(false)
     }

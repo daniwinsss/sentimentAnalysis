@@ -18,13 +18,16 @@ MODEL_MAPPING = {
 def _load_model(name: str):
   if not name:
     name = DEFAULT_MODEL
+  
   # Map name if it exists in mapping, else use the name as is
   actual_name = MODEL_MAPPING.get(name.lower(), name)
   model_path = MODEL_DIR / f"{actual_name}.joblib"
   vectorizer_path = MODEL_DIR / "tfidf_vectorizer.joblib"
   
+  logger.info(f"Loading model: {actual_name} from {model_path}")
+  
   if not model_path.exists():
-    # If specific model not found, try fallback to default
+    logger.warning(f"Model path {model_path} does not exist, falling back to {DEFAULT_MODEL}")
     actual_name = DEFAULT_MODEL
     model_path = MODEL_DIR / f"{actual_name}.joblib"
 
@@ -35,6 +38,7 @@ def _load_model(name: str):
     
   model = joblib.load(model_path)
   vectorizer = joblib.load(vectorizer_path)
+  logger.info(f"Successfully loaded model {actual_name}")
   return model, vectorizer
 
 
@@ -113,14 +117,16 @@ def _get_transformer():
     global _transformer_pipeline
     if _transformer_pipeline is None:
         try:
+            logger.info("Starting transformer model load...")
             # Using a lightweight DistilBERT model for speed and efficiency
             # Explicitly force PyTorch (framework="pt") to avoid Keras 3 compatibility issues
             _transformer_pipeline = pipeline(
                 "sentiment-analysis", 
                 model="distilbert-base-uncased-finetuned-sst-2-english",
-                device=0 if torch.cuda.is_available() else -1,
+                device=-1, # Force CPU for free tier stability
                 framework="pt"
             )
+            logger.info("Transformer model loaded successfully.")
         except Exception as e:
             logger.error(f"Failed to load transformer model: {e}")
             _transformer_pipeline = False
