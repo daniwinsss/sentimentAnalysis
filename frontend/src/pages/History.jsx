@@ -25,7 +25,7 @@ function History() {
   const fetchHistory = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await axios.get('http://localhost:4000/api/history', {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'}/api/history`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       // The API returns { items: [...] }
@@ -41,7 +41,7 @@ function History() {
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('token')
-      await axios.delete(`http://localhost:4000/api/history/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'}/api/history/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setHistory(history.filter(item => item._id !== id))

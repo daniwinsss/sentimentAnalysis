@@ -35,7 +35,7 @@ function Analyzer() {
     try {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        'http://localhost:4000/api/analyze',
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'}/api/analyze`,
         { text, model: selectedModel },
         { headers: { Authorization: `Bearer ${token}` } }
       )

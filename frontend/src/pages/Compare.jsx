@@ -10,7 +10,7 @@ function Compare() {
     const fetchUsage = async () => {
       try {
         const token = localStorage.getItem('token')
-        const response = await axios.get('http://localhost:4000/api/analytics/model-comparison', {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'}/api/analytics/model-comparison`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         setUsage(response.data.modelCounts || {})

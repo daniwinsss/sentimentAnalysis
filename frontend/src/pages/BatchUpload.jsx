@@ -43,7 +43,7 @@ function BatchUpload() {
     try {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        'http://localhost:4000/api/analyze/batch',
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'}/api/analyze/batch`,
         formData,
         {
           headers: {
