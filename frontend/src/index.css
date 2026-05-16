@@ -10,7 +10,7 @@
   --bg-dark: #0A0A0A;
   --bg-charcoal: #121212;
   --bg-card: #1E1E1E;
-  
+
   color-scheme: dark;
   font-family: 'Inter', sans-serif;
 }
@@ -62,7 +62,11 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, .font-display {
+h1,
+h2,
+h3,
+h4,
+.font-display {
   font-family: 'Outfit', sans-serif;
   letter-spacing: -0.02em;
 }
@@ -75,13 +79,16 @@ h1, h2, h3, h4, .font-display {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--imdb-yellow);
 }
@@ -92,9 +99,17 @@ h1, h2, h3, h4, .font-display {
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .btn-imdb {
@@ -102,5 +117,5 @@ h1, h2, h3, h4, .font-display {
 }
 
 .btn-imdb:hover {
-  @apply bg-[#E2B616] shadow-[0_0_20px_rgba(245,197,24,0.3)];
+  @apply bg-[#E2B616] shadow-[0_0_20px_rgba(245, 197, 24, 0.3)];
 }
