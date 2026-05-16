@@ -123,11 +123,13 @@ def _get_transformer():
             )
         except Exception as e:
             logger.error(f"Failed to load transformer model: {e}")
-            raise e
+            _transformer_pipeline = False
     return _transformer_pipeline
 
 def _predict_transformer(text: str):
     nlp = _get_transformer()
+    if not nlp:
+        raise RuntimeError("Transformer model unavailable")
     result = nlp(text)[0]
     sentiment_label = "Positive" if result['label'] == 'POSITIVE' else "Negative"
     
@@ -147,8 +149,11 @@ def predict_text(text: str, model_name: str | None = DEFAULT_MODEL):
     try:
         model_name = model_name or DEFAULT_MODEL
         if model_name.lower() in ["transformer", "bert"]:
-            result = _predict_transformer(text)
-            return {"model": "bert", **result}
+            try:
+                result = _predict_transformer(text)
+                return {"model": "bert", **result}
+            except Exception as e:
+                logger.warning(f"Transformer fallback to classic model: {e}")
         
         model, vectorizer = _load_model(model_name)
         result = _predict_one(model, vectorizer, text)
@@ -162,15 +167,20 @@ def predict_text(text: str, model_name: str | None = DEFAULT_MODEL):
 def predict_batch(items: List[str], model_name: str | None = DEFAULT_MODEL):
     model_name = model_name or DEFAULT_MODEL
     if model_name.lower() in ["transformer", "bert"]:
-        nlp = _get_transformer()
-        results = []
-        batch_results = nlp(items)
-        for res in batch_results:
-            results.append({
-                "sentiment": "Positive" if res['label'] == 'POSITIVE' else "Negative",
-                "confidence": float(res['score'])
-            })
-        return {"model": "bert", "items": results}
+        try:
+            nlp = _get_transformer()
+            if not nlp:
+                raise RuntimeError("Transformer model unavailable")
+            results = []
+            batch_results = nlp(items)
+            for res in batch_results:
+                results.append({
+                    "sentiment": "Positive" if res['label'] == 'POSITIVE' else "Negative",
+                    "confidence": float(res['score'])
+                })
+            return {"model": "bert", "items": results}
+        except Exception as e:
+            logger.warning(f"Transformer batch fallback to classic model: {e}")
 
     model, vectorizer = _load_model(model_name)
     cleaned_items = normalize_batch(items)
@@ -203,4 +213,3 @@ def predict_batch(items: List[str], model_name: str | None = DEFAULT_MODEL):
                     "confidence": float(exp_scores[max_index] / exp_scores.sum())
                 })
     return {"model": model_name, "items": results}
-
