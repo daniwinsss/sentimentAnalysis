@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --imdb-yellow: #F5C518;
+  --imdb-yellow-hover: #E2B616;
+  --bg-dark: #0A0A0A;
+  --bg-charcoal: #121212;
+  --bg-card: #1E1E1E;
+  
+  color-scheme: dark;
+  font-family: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-dark);
+  color: #ffffff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism & Cards */
+.glass {
+  background: rgba(18, 18, 18, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card {
+  background: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border: 1px solid rgba(245, 197, 24, 0.2);
+  background: #181818;
+  transform: translateY(-2px);
+}
+
+.text-imdb {
+  color: var(--imdb-yellow);
+}
+
+.bg-imdb {
+  background-color: var(--imdb-yellow);
+}
+
+.border-imdb {
+  border-color: var(--imdb-yellow);
+}
+
+/* Typography */
+h1, h2, h3, h4, .font-display {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.heading-glow {
+  text-shadow: 0 0 40px rgba(245, 197, 24, 0.1);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--imdb-yellow);
+}
+
+/* Animations */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.btn-imdb {
+  @apply relative overflow-hidden bg-[#F5C518] text-black font-bold uppercase tracking-widest text-[10px] px-8 py-4 rounded-md transition-all active:scale-95;
+}
+
+.btn-imdb:hover {
+  @apply bg-[#E2B616] shadow-[0_0_20px_rgba(245,197,24,0.3)];
+}
