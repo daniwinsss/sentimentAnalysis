@@ -60,59 +60,67 @@ def _get_label_name(label):
   return str(label).capitalize()
 
 def _predict_one(model, vectorizer, text: str):
-  cleaned_batch = normalize_batch([text])
-  if not cleaned_batch or not cleaned_batch[0]:
-    return {
-      "sentiment": "Neutral",
-      "confidence": 0.0,
-      "tokens": []
-    }
-    
-  vector = vectorizer.transform(cleaned_batch)
-  
-  # Handle models without predict_proba (like LinearSVC)
-  if hasattr(model, "predict_proba"):
-    probs = model.predict_proba(vector)[0]
-    labels = model.classes_.tolist()
-    max_index = probs.argmax()
-    sentiment_label = _get_label_name(labels[max_index])
-    confidence = float(probs[max_index])
-  else:
-    # Fallback for LinearSVC using decision_function
-    scores = model.decision_function(vector)
-    if len(scores.shape) == 1 or (len(scores.shape) == 2 and scores.shape[1] == 1):
-      score = scores[0] if len(scores.shape) == 1 else scores[0][0]
-      # Sigmoid for probability approximation
-      prob_positive = 1 / (1 + np.exp(-score))
-      if prob_positive > 0.5:
-        sentiment_label = "Positive"
-        confidence = float(prob_positive)
-      else:
-        sentiment_label = "Negative"
-        confidence = float(1 - prob_positive)
-    else:
-      # Multi-class
-      max_index = scores[0].argmax()
-      sentiment_label = _get_label_name(model.classes_[max_index])
-      exp_scores = np.exp(scores[0])
-      confidence = float(exp_scores[max_index] / exp_scores.sum())
-  
-    # Simple token-level sentiment for UI
-    tokens = []
-    words = text.split()
-    for word in words[:10]:
-        tokens.append({
-            "token": word,
-            "sentiment": sentiment_label
-        })
+    try:
+        cleaned_batch = normalize_batch([text])
+        if not cleaned_batch or not cleaned_batch[0]:
+            return {
+                "sentiment": "Neutral",
+                "confidence": 0.0,
+                "tokens": []
+            }
+            
+        vector = vectorizer.transform(cleaned_batch)
+        
+        # Handle models without predict_proba (like LinearSVC)
+        if hasattr(model, "predict_proba"):
+            probs = model.predict_proba(vector)[0]
+            labels = model.classes_.tolist()
+            max_index = probs.argmax()
+            sentiment_label = _get_label_name(labels[max_index])
+            confidence = float(probs[max_index])
+        else:
+            # Fallback for LinearSVC using decision_function
+            scores = model.decision_function(vector)
+            # Ensure scores is at least 1D
+            if np.isscalar(scores):
+                scores = np.array([scores])
+            
+            if len(scores.shape) == 1 or (len(scores.shape) == 2 and scores.shape[1] == 1):
+                score = scores[0] if len(scores.shape) == 1 else scores[0][0]
+                # Sigmoid for probability approximation
+                prob_positive = 1 / (1 + np.exp(-score))
+                if prob_positive > 0.5:
+                    sentiment_label = "Positive"
+                    confidence = float(prob_positive)
+                else:
+                    sentiment_label = "Negative"
+                    confidence = float(1 - prob_positive)
+            else:
+                # Multi-class
+                max_index = scores[0].argmax()
+                sentiment_label = _get_label_name(model.classes_[max_index])
+                exp_scores = np.exp(scores[0] - np.max(scores[0])) # Stability
+                confidence = float(exp_scores[max_index] / exp_scores.sum())
+        
+        # Simple token-level sentiment for UI
+        tokens = []
+        words = text.split()
+        for word in words[:10]:
+            tokens.append({
+                "token": word,
+                "sentiment": sentiment_label
+            })
 
-    result = {
-        "sentiment": sentiment_label,
-        "confidence": confidence,
-        "tokens": tokens
-    }
-    logger.info(f"Returning result: {result}")
-    return result
+        result = {
+            "sentiment": sentiment_label,
+            "confidence": confidence,
+            "tokens": tokens
+        }
+        logger.info(f"Returning result: {result}")
+        return result
+    except Exception as e:
+        logger.error(f"Error in _predict_one: {e}")
+        raise e
 
 
 from transformers import pipeline

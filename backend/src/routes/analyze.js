@@ -15,8 +15,17 @@ router.post('/', auth, async (req, res) => {
   }
 
   try {
-    const prediction = await predictSingle(text, model)
-    console.log('Prediction received from ML service:', JSON.stringify(prediction, null, 2))
+    console.log(`Analyzing with model: ${model}, text length: ${text.length}`);
+    const prediction = await predictSingle(text, model).catch(err => {
+      console.error('ML Service Fetch Error:', err.message);
+      if (err.response) {
+        console.error('ML Service Error Data:', err.response.data);
+        console.error('ML Service Error Status:', err.response.status);
+      }
+      throw err;
+    });
+    
+    console.log('Prediction received from ML service:', JSON.stringify(prediction, null, 2));
     
     if (!prediction || !prediction.sentiment) {
       console.error('ML Service returned invalid data:', prediction)
