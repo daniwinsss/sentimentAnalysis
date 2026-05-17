@@ -16,30 +16,36 @@ MODEL_MAPPING = {
 }
 
 def _load_model(name: str):
-  if not name:
-    name = DEFAULT_MODEL
-  
-  # Map name if it exists in mapping, else use the name as is
-  actual_name = MODEL_MAPPING.get(name.lower(), name)
-  model_path = MODEL_DIR / f"{actual_name}.joblib"
-  vectorizer_path = MODEL_DIR / "tfidf_vectorizer.joblib"
-  
-  logger.info(f"Loading model: {actual_name} from {model_path}")
-  
-  if not model_path.exists():
-    logger.warning(f"Model path {model_path} does not exist, falling back to {DEFAULT_MODEL}")
-    actual_name = DEFAULT_MODEL
-    model_path = MODEL_DIR / f"{actual_name}.joblib"
-
-  if not model_path.exists():
-    raise FileNotFoundError(f"Model not found: {model_path}")
-  if not vectorizer_path.exists():
-    raise FileNotFoundError(f"Vectorizer not found: {vectorizer_path}")
+    if not name:
+        name = DEFAULT_MODEL
     
-  model = joblib.load(model_path)
-  vectorizer = joblib.load(vectorizer_path)
-  logger.info(f"Successfully loaded model {actual_name}")
-  return model, vectorizer
+    # Map name if it exists in mapping, else use the name as is
+    actual_name = MODEL_MAPPING.get(name.lower(), name)
+    model_path = MODEL_DIR / f"{actual_name}.joblib"
+    vectorizer_path = MODEL_DIR / "tfidf_vectorizer.joblib"
+    
+    logger.info(f"Loading model: {actual_name} from {model_path}")
+    
+    if not model_path.exists():
+        logger.warning(f"Model path {model_path} does not exist, falling back to {DEFAULT_MODEL}")
+        actual_name = DEFAULT_MODEL
+        model_path = MODEL_DIR / f"{actual_name}.joblib"
+
+    if not model_path.exists():
+        logger.error(f"CRITICAL: Model file not found at {model_path}")
+        raise FileNotFoundError(f"Model not found: {model_path}")
+    if not vectorizer_path.exists():
+        logger.error(f"CRITICAL: Vectorizer file not found at {vectorizer_path}")
+        raise FileNotFoundError(f"Vectorizer not found: {vectorizer_path}")
+    
+    try:
+        model = joblib.load(model_path)
+        vectorizer = joblib.load(vectorizer_path)
+        logger.info(f"Successfully loaded model {actual_name}")
+        return model, vectorizer
+    except Exception as e:
+        logger.error(f"Failed to load joblib files: {e}")
+        raise e
 
 
 import logging
@@ -91,20 +97,22 @@ def _predict_one(model, vectorizer, text: str):
       exp_scores = np.exp(scores[0])
       confidence = float(exp_scores[max_index] / exp_scores.sum())
   
-  # Simple token-level sentiment for UI
-  tokens = []
-  words = text.split()
-  for word in words[:10]:
-    tokens.append({
-      "token": word,
-      "sentiment": sentiment_label
-    })
+    # Simple token-level sentiment for UI
+    tokens = []
+    words = text.split()
+    for word in words[:10]:
+        tokens.append({
+            "token": word,
+            "sentiment": sentiment_label
+        })
 
-  return {
-    "sentiment": sentiment_label,
-    "confidence": confidence,
-    "tokens": tokens
-  }
+    result = {
+        "sentiment": sentiment_label,
+        "confidence": confidence,
+        "tokens": tokens
+    }
+    logger.info(f"Returning result: {result}")
+    return result
 
 
 from transformers import pipeline

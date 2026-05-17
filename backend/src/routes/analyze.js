@@ -16,7 +16,16 @@ router.post('/', auth, async (req, res) => {
 
   try {
     const prediction = await predictSingle(text, model)
-    console.log('Prediction received:', prediction)
+    console.log('Prediction received from ML service:', JSON.stringify(prediction, null, 2))
+    
+    if (!prediction || !prediction.sentiment) {
+      console.error('ML Service returned invalid data:', prediction)
+      return res.status(500).json({ 
+        message: 'Incomplete response from sentiment engine',
+        details: 'The ML service did not return a valid sentiment classification.'
+      })
+    }
+
     const record = await Analysis.create({
       userId: req.user.id,
       text,
